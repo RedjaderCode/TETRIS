@@ -19,6 +19,9 @@ uint16_t BORDER_IMGH;
 TEXTURE _tetris_T[ NUM_OF_TETRIS_TEXTURES * NUM_OF_TETRIS_TEXTURES ];
 SDL_Rect TetrisPieceT[ NUM_OF_TETRIS_TEXTURES ][ NUM_OF_TETRIS_TEXTURES ];
 
+TEXTURE _tetris_map[MAP_N_BORDER];
+SDL_Rect TetrisPieceMap[MAP_N_BORDER];
+
 inline void init(){
 
     SDL_Init(SDL_INIT_EVERYTHING);
@@ -55,9 +58,8 @@ void TEXTURE::render(uint16_t x, uint16_t y, SDL_Rect * clip){
     SDL_Rect rec = {x, y, IMG_Width, IMG_Height};
 
     if(cTexture != NULL){
-
-        rec.w = clip->w;
-        rec.h = clip->h;
+        rec.w = clip->w * 0.5;
+        rec.h = clip->h * 0.5;
     }
 
     SDL_RenderCopy(cRender, cTexture, clip, &rec);
@@ -65,11 +67,11 @@ void TEXTURE::render(uint16_t x, uint16_t y, SDL_Rect * clip){
 
 inline void LoadDims(){
 
-    _tetris_T[ MAP_N_BORDER ].LoadTexture("assets/Board/Board.png");
-    TetrisPieceT[ MAP_N_BORDER ][ GAME_BORDER ] = {NULL, NULL, IMGW, IMGH};
+    const uint16_t IMGWMAP = 382;
+    const uint16_t IMGHMAP = 700;
 
-    BORDER_IMGW = TetrisPieceT[ MAP_N_BORDER ][ GAME_BORDER ].w;
-    BORDER_IMGH = TetrisPieceT[ MAP_N_BORDER ][ GAME_BORDER ].h;
+    _tetris_map[ MAP_N_BORDER ].LoadTexture("assets/Board/Board.png");
+    TetrisPieceMap[ MAP_N_BORDER ] = {NULL, NULL, IMGWMAP, IMGHMAP};
 
     _tetris_T[ TETRIS_T_PIECE ].LoadTexture("assets/single/Blue.png");
     TetrisPieceT[ TETRIS_T_PIECE ][ T_CENTRAL ] = {NULL, NULL, IMGW, IMGH};
@@ -102,14 +104,37 @@ int main(int s, char * z[]){
     init();
     LoadDims();
 
-    uint16_t POS_X       = ((nScreenWidth - IMGW * 0.5) * 0.5);
-    uint16_t POS_Y       = ((nScreenHeight - IMGH * 0.5) * 0.5);
-    uint16_t POS_X_UP    = POS_X;
-    uint16_t POS_Y_UP    = (POS_Y - IMGH);
-    uint16_t POS_X_LEFT  = (POS_X - IMGW);
-    uint16_t POS_Y_LEFT  = POS_Y;
-    uint16_t POS_X_RIGHT = (POS_X + IMGW);
-    uint16_t POS_Y_RIGHT = POS_Y;
+    IMGW *= 0.5;
+    IMGH *= 0.5;
+
+    // resizing map and initial tetris position on map
+
+    TetrisPieceMap[ MAP_N_BORDER ].w = (TetrisPieceMap[ MAP_N_BORDER ].w * 1.80  );
+    TetrisPieceMap[ MAP_N_BORDER ].h = (TetrisPieceMap[ MAP_N_BORDER ].h * 1.80  ); 
+    BORDER_IMGW                      = (TetrisPieceMap[ MAP_N_BORDER ].w         );
+    BORDER_IMGH                      = (TetrisPieceMap[ MAP_N_BORDER ].h         );
+    uint16_t MAP_X                   = ((nScreenWidth -  BORDER_IMGW * 0.5) * 0.5);
+    uint16_t MAP_Y                   = ((nScreenHeight - BORDER_IMGH * 0.5) * 0.5);
+    
+    // Initial position for the tetris pieces
+    uint16_t POS_X                   = MAP_X + (MAP_X>>1);
+    uint16_t POS_Y                   = MAP_Y;
+
+    // The positions relative to the center block
+    uint16_t POS_X_UP                = POS_X;
+    uint16_t POS_Y_UP                = (POS_Y - IMGH);
+    uint16_t POS_X_LEFT              = (POS_X - IMGW);
+    uint16_t POS_Y_LEFT              = POS_Y;
+    uint16_t POS_X_RIGHT             = (POS_X + IMGW);
+    uint16_t POS_Y_RIGHT             = POS_Y;
+    float NudgeVelocity              = BORDER_IMGW / 12; // 12 is the number of tiles in the map
+    float speed                      = (IMGH - (IMGH * 0.5));
+                 POS_X               = MAP_X + (((int)NudgeVelocity<<1) + (int)NudgeVelocity);
+                 POS_Y               = NudgeVelocity; // One tile down
+
+
+
+    printf("Window position -> [%d][%d]", MAP_X, MAP_Y);
 
     while(running){
 
@@ -126,10 +151,12 @@ int main(int s, char * z[]){
                     break;
             }
 
-            if(input[ SDL_SCANCODE_UP ] || input[ SDL_SCANCODE_W ] || input[ SDL_SCANCODE_U ]) key = 'U';
-            else if(input[ SDL_SCANCODE_V ]) key = 'V';
-            else if(input[ SDL_SCANCODE_ESCAPE ]) key = '~';
-            else key = ' ';
+            if     (input[ SDL_SCANCODE_UP ]|| input[ SDL_SCANCODE_W ] || input[ SDL_SCANCODE_U ]) key = 'U';
+            else if(input[ SDL_SCANCODE_V ] || input[ SDL_SCANCODE_Z ]    )                        key = 'V';
+            else if(input[ SDL_SCANCODE_A ] || input[ SDL_SCANCODE_LEFT ] )                        key = 'L';
+            else if(input[ SDL_SCANCODE_D ] || input[ SDL_SCANCODE_RIGHT ])                        key = 'R';
+            else if(input[ SDL_SCANCODE_ESCAPE ]                          )                        key = '~';
+            else                                                                                   key = ' ';
         }
 // EITHER CHECK WHICH POSITION IT IS IN AND ASSIGN X, Y ACCORDINGLY, OR USE ALGORITHM TO COMPUTE THEIR POSITIONS DYNAMICALLY
         
@@ -137,55 +164,19 @@ int main(int s, char * z[]){
             case 'U':
                 ++CURRENT_DEGREE;
                 printf("rotation[%d]\nPOS_X[%d]\nPOS_Y[%d]\n\n\n", CURRENT_DEGREE, POS_X, POS_Y);
-                switch(CURRENT_DEGREE%4){
-                    case 0: 
-                        POS_X_UP    = POS_X; POS_Y_UP             = (POS_Y - IMGH);
-                        POS_X_LEFT  = (POS_X - IMGW); POS_Y_LEFT  = POS_Y;
-                        POS_X_RIGHT = (POS_X + IMGW); POS_Y_RIGHT = POS_Y;
-                    break;
-                    case 1: 
-                        POS_X_UP    = (POS_X - IMGW); POS_Y_UP = POS_Y;
-                        POS_X_LEFT  = POS_X; POS_Y_LEFT        = (POS_Y + IMGH);
-                        POS_X_RIGHT = POS_X; POS_Y_RIGHT       = (POS_Y - IMGH);
-                    break;
-                    case 2: 
-                        POS_X_UP    = POS_X; POS_Y_UP             = (POS_Y + IMGH);
-                        POS_X_LEFT  = (POS_X + IMGW); POS_Y_LEFT  = POS_Y;
-                        POS_X_RIGHT = (POS_X - IMGW); POS_Y_RIGHT = POS_Y;
-                    break;
-                    case 3: 
-                        POS_X_UP    = (POS_X + IMGW); POS_Y_UP = POS_Y;
-                        POS_X_LEFT  = POS_X; POS_Y_LEFT        = (POS_Y - IMGH);
-                        POS_X_RIGHT = POS_X; POS_Y_RIGHT       = (POS_Y + IMGH);
-                    break;
-                }
                 SDL_Delay(50);
             break;
             case 'V':
                 --CURRENT_DEGREE;
                 printf("rotation[%d]\nPOS_X[%d]\nPOS_Y[%d]\n\n\n", CURRENT_DEGREE, POS_X, POS_Y);
-                switch(CURRENT_DEGREE%4){
-                    case 0: 
-                        POS_X_UP    = POS_X; POS_Y_UP             = (POS_Y - IMGH);
-                        POS_X_LEFT  = (POS_X - IMGW); POS_Y_LEFT  = POS_Y;
-                        POS_X_RIGHT = (POS_X + IMGW); POS_Y_RIGHT = POS_Y;
-                    break;
-                    case 1: 
-                        POS_X_UP    = (POS_X - IMGW); POS_Y_UP = POS_Y;
-                        POS_X_LEFT  = POS_X; POS_Y_LEFT        = (POS_Y + IMGH);
-                        POS_X_RIGHT = POS_X; POS_Y_RIGHT       = (POS_Y - IMGH);
-                    break;
-                    case 2: 
-                        POS_X_UP    = POS_X; POS_Y_UP             = (POS_Y + IMGH);
-                        POS_X_LEFT  = (POS_X + IMGW); POS_Y_LEFT  = POS_Y;
-                        POS_X_RIGHT = (POS_X - IMGW); POS_Y_RIGHT = POS_Y;
-                    break;
-                    case 3: 
-                        POS_X_UP    = (POS_X + IMGW); POS_Y_UP = POS_Y;
-                        POS_X_LEFT  = POS_X; POS_Y_LEFT        = (POS_Y - IMGH);
-                        POS_X_RIGHT = POS_X; POS_Y_RIGHT       = (POS_Y + IMGH);
-                    break;
-                }
+                SDL_Delay(50);
+            break;
+            case 'L':
+                POS_X = POS_X - ((int)NudgeVelocity>>1);
+                SDL_Delay(50);
+            break;
+            case 'R':
+                POS_X = POS_X + ((int)NudgeVelocity>>1);
                 SDL_Delay(50);
             break;
             case '~':
@@ -193,6 +184,40 @@ int main(int s, char * z[]){
                 running = false;
             break;
         }
+        // a check for each iteration and their computation
+        switch(CURRENT_DEGREE%4){
+            case 0: 
+                POS_X_UP    = POS_X; POS_Y_UP             = (POS_Y - IMGH) + (IMGH>>1);
+                POS_X_LEFT  = (POS_X - IMGW); POS_Y_LEFT  = POS_Y + (IMGH>>1);
+                POS_X_RIGHT = (POS_X + IMGW); POS_Y_RIGHT = POS_Y + (IMGH>>1);
+            break;
+            case 1: 
+                POS_X_UP    = (POS_X - IMGW); POS_Y_UP = POS_Y + (IMGH>>1);
+                POS_X_LEFT  = POS_X; POS_Y_LEFT        = (POS_Y + IMGH) + (IMGH>>1);
+                POS_X_RIGHT = POS_X; POS_Y_RIGHT       = (POS_Y - IMGH) + (IMGH>>1);
+            break;
+            case 2: 
+                POS_X_UP    = POS_X; POS_Y_UP             = (POS_Y + IMGH) + (IMGH>>1);
+                POS_X_LEFT  = (POS_X + IMGW); POS_Y_LEFT  = POS_Y + (IMGH>>1);
+                POS_X_RIGHT = (POS_X - IMGW); POS_Y_RIGHT = POS_Y + (IMGH>>1);
+            break;
+            case 3: 
+                POS_X_UP    = (POS_X + IMGW); POS_Y_UP = POS_Y + (IMGH>>1);
+                POS_X_LEFT  = POS_X; POS_Y_LEFT        = (POS_Y - IMGH) + (IMGH>>1);
+                POS_X_RIGHT = POS_X; POS_Y_RIGHT       = (POS_Y + IMGH) + (IMGH>>1);
+            break;
+        }
+        // A check for when the teris piece hits the bottom of the map
+        // NOTE: Set boundary formula to the bottum of the tile map
+        POS_Y = (POS_Y + IMGH) + speed >= nScreenHeight && CURRENT_DEGREE%4==0? (nScreenHeight - IMGH) - (IMGH>>1): POS_Y + ((int)speed>>2);
+        POS_Y = (POS_Y + IMGH) + speed >= nScreenHeight && CURRENT_DEGREE%4==1? (nScreenHeight - IMGH) - (IMGH>>1): POS_Y + ((int)speed>>2);
+        POS_Y = (POS_Y + IMGH) + speed >= nScreenHeight && CURRENT_DEGREE%4==2? (nScreenHeight - IMGH) - (IMGH>>1): POS_Y + ((int)speed>>2);
+        POS_Y = (POS_Y + IMGH) + speed >= nScreenHeight && CURRENT_DEGREE%4==3? (nScreenHeight - IMGH) - (IMGH>>1): POS_Y + ((int)speed>>2);
+
+        SDL_Delay((int)speed << 2);
+
+        //Resource rendering for background and map
+        _tetris_map[ MAP_N_BORDER ].render(MAP_X, MAP_Y, &TetrisPieceMap[ MAP_N_BORDER ]);
     
         //Tetris Pieces initial
         _tetris_T[ TETRIS_T_PIECE ].render(POS_X,       POS_Y,       &TetrisPieceT[ TETRIS_T_PIECE ][ T_CENTRAL ]);
