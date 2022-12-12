@@ -73,6 +73,9 @@ inline void LoadDims(){
     _tetris_map[ MAP_N_BORDER ].LoadTexture("assets/Board/Board.png");
     TetrisPieceMap[ MAP_N_BORDER ] = {NULL, NULL, IMGWMAP, IMGHMAP};
 
+    _tetris_map[ BACKGROUND ].LoadTexture("assets/background.png");
+    TetrisPieceMap[ BACKGROUND ] = {NULL, NULL, IMGW, IMGH};
+
     _tetris_T[ TETRIS_T_PIECE ].LoadTexture("assets/single/Blue.png");
     TetrisPieceT[ TETRIS_T_PIECE ][ T_CENTRAL ] = {NULL, NULL, IMGW, IMGH};
     TetrisPieceT[ TETRIS_T_PIECE ][ T_RIGHT ]   = {NULL, NULL, IMGW, IMGH};
@@ -173,11 +176,15 @@ int main(int s, char * z[]){
             break;
             case 'L':
                 POS_X = POS_X - ((int)NudgeVelocity>>1);
-                SDL_Delay(50);
+                if(POS_X - ((int)NudgeVelocity>>1) <= (MAP_X + NudgeVelocity))
+                    POS_X = MAP_X + ((int)NudgeVelocity>>1);
+                //SDL_Delay(50);
             break;
             case 'R':
                 POS_X = POS_X + ((int)NudgeVelocity>>1);
-                SDL_Delay(50);
+                if(POS_X + ((int)NudgeVelocity>>1) >= ((int)nScreenWidth>>1) + ((int)NudgeVelocity<<1))
+                    POS_X = ((int)nScreenWidth>>1) + ((int)NudgeVelocity<<1);
+                //SDL_Delay(50);
             break;
             case '~':
                 close();
@@ -217,6 +224,7 @@ int main(int s, char * z[]){
         SDL_Delay((int)speed << 2);
 
         //Resource rendering for background and map
+        _tetris_map[ BACKGROUND   ].render(NULL,  NULL,  &TetrisPieceMap[ BACKGROUND   ]);
         _tetris_map[ MAP_N_BORDER ].render(MAP_X, MAP_Y, &TetrisPieceMap[ MAP_N_BORDER ]);
     
         //Tetris Pieces initial

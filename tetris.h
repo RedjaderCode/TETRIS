@@ -38,6 +38,8 @@ enum Tet_pieces{
     T_LEFT,
     T_UP,
 
+    BACKGROUND,
+
     MAP_N_BORDER,
 
     GAME_BORDER,
