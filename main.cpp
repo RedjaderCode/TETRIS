@@ -24,15 +24,23 @@ SDL_Rect TetrisPieceMap[MAP_N_BORDER];
 
 inline void init(){
 
+    const char * WindowIcon = "assets/Title.png";
+
     SDL_Init(SDL_INIT_EVERYTHING);
     IMG_Init(IMG_INIT_PNG);
 
     cWindow = SDL_CreateWindow  (title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, nScreenWidth, nScreenHeight, SDL_WINDOW_SHOWN);
     cRender = SDL_CreateRenderer(cWindow, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+
+    SDL_Surface * cSurface = IMG_Load(WindowIcon);
+  	SDL_SetWindowIcon(cWindow, cSurface);
+  	SDL_FreeSurface(cSurface);
 }
 
 void TEXTURE::free(){
     SDL_DestroyTexture(cTexture);
+    IMGW = 0;
+    IMGH = 0;
     IMG_Width  = 0;
     IMG_Height = 0;
 }
@@ -70,17 +78,20 @@ inline void LoadDims(){
     const uint16_t IMGWMAP = 382;
     const uint16_t IMGHMAP = 700;
 
+    const uint16_t BACKGROUND_WIDTH = 640;
+    const uint16_t BACKGROUND_HEIGHT = 480;
+
     _tetris_map[ MAP_N_BORDER ].LoadTexture("assets/Board/Board.png");
     TetrisPieceMap[ MAP_N_BORDER ] = {NULL, NULL, IMGWMAP, IMGHMAP};
 
     _tetris_map[ BACKGROUND ].LoadTexture("assets/background.png");
-    TetrisPieceMap[ BACKGROUND ] = {NULL, NULL, IMGW, IMGH};
+    TetrisPieceMap[ BACKGROUND ] = {NULL, NULL, ((BACKGROUND_WIDTH<<2) - BACKGROUND_WIDTH), ((BACKGROUND_HEIGHT<<2) - BACKGROUND_HEIGHT)};
 
     _tetris_T[ TETRIS_T_PIECE ].LoadTexture("assets/single/Blue.png");
     TetrisPieceT[ TETRIS_T_PIECE ][ T_CENTRAL ] = {NULL, NULL, IMGW, IMGH};
-    TetrisPieceT[ TETRIS_T_PIECE ][ T_RIGHT ]   = {NULL, NULL, IMGW, IMGH};
-    TetrisPieceT[ TETRIS_T_PIECE ][ T_LEFT ]    = {NULL, NULL, IMGW, IMGH};
-    TetrisPieceT[ TETRIS_T_PIECE ][ T_UP ]      = {NULL, NULL, IMGW, IMGH};
+    TetrisPieceT[ TETRIS_T_PIECE ][ T_RIGHT   ] = {NULL, NULL, IMGW, IMGH};
+    TetrisPieceT[ TETRIS_T_PIECE ][ T_LEFT    ] = {NULL, NULL, IMGW, IMGH};
+    TetrisPieceT[ TETRIS_T_PIECE ][ T_UP      ] = {NULL, NULL, IMGW, IMGH};
 }
 
 inline void close(){
@@ -154,12 +165,12 @@ int main(int s, char * z[]){
                     break;
             }
 
-            if     (input[ SDL_SCANCODE_UP ]|| input[ SDL_SCANCODE_W ] || input[ SDL_SCANCODE_U ]) key = 'U';
-            else if(input[ SDL_SCANCODE_V ] || input[ SDL_SCANCODE_Z ]    )                        key = 'V';
-            else if(input[ SDL_SCANCODE_A ] || input[ SDL_SCANCODE_LEFT ] )                        key = 'L';
-            else if(input[ SDL_SCANCODE_D ] || input[ SDL_SCANCODE_RIGHT ])                        key = 'R';
-            else if(input[ SDL_SCANCODE_ESCAPE ]                          )                        key = '~';
-            else                                                                                   key = ' ';
+            if     (input[ SDL_SCANCODE_V ] || input[ SDL_SCANCODE_L ]     ) key = 'U';
+            else if(input[ SDL_SCANCODE_UP ]|| input[ SDL_SCANCODE_W ]     ) key = 'V';
+            else if(input[ SDL_SCANCODE_A ] || input[ SDL_SCANCODE_LEFT ]  ) key = 'L';
+            else if(input[ SDL_SCANCODE_D ] || input[ SDL_SCANCODE_RIGHT ] ) key = 'R';
+            else if(input[ SDL_SCANCODE_ESCAPE ]                           ) key = '~';
+            else                                                             key = ' ';
         }
 // EITHER CHECK WHICH POSITION IT IS IN AND ASSIGN X, Y ACCORDINGLY, OR USE ALGORITHM TO COMPUTE THEIR POSITIONS DYNAMICALLY
         
@@ -175,16 +186,20 @@ int main(int s, char * z[]){
                 SDL_Delay(50);
             break;
             case 'L':
-                POS_X = POS_X - ((int)NudgeVelocity>>1);
-                if(POS_X - ((int)NudgeVelocity>>1) <= (MAP_X + NudgeVelocity))
-                    POS_X = MAP_X + ((int)NudgeVelocity>>1);
-                //SDL_Delay(50);
+                POS_X = 
+                (POS_X - ((int)NudgeVelocity>>1) <= (MAP_X + NudgeVelocity)) && CURRENT_DEGREE%4==0 ? (MAP_X + NudgeVelocity          )
+            :   (POS_X - ((int)NudgeVelocity>>1) <= (MAP_X + NudgeVelocity)) && CURRENT_DEGREE%4==1 ? (MAP_X + NudgeVelocity          )
+            :   (POS_X - ((int)NudgeVelocity>>1) <= (MAP_X + NudgeVelocity)) && CURRENT_DEGREE%4==2 ? (MAP_X + NudgeVelocity          )
+            :   (POS_X - ((int)NudgeVelocity>>1) <= (MAP_X + NudgeVelocity)) && CURRENT_DEGREE%4==3 ? (MAP_X + ((int)NudgeVelocity>>1))
+            :   POS_X - ((int)NudgeVelocity>>1);
             break;
             case 'R':
-                POS_X = POS_X + ((int)NudgeVelocity>>1);
-                if(POS_X + ((int)NudgeVelocity>>1) >= ((int)nScreenWidth>>1) + ((int)NudgeVelocity<<1))
-                    POS_X = ((int)nScreenWidth>>1) + ((int)NudgeVelocity<<1);
-                //SDL_Delay(50);
+                POS_X = 
+                (POS_X + ((int)NudgeVelocity>>1) >= ((int)nScreenWidth>>1) + ((int)NudgeVelocity<<1)) - IMGW && CURRENT_DEGREE%4==0 ? (((int)nScreenWidth>>1) + ((int)NudgeVelocity<<1)) - IMGW
+            :   (POS_X + ((int)NudgeVelocity>>1) >= ((int)nScreenWidth>>1) + ((int)NudgeVelocity<<1))        && CURRENT_DEGREE%4==1 ? (((int)nScreenWidth>>1) + ((int)NudgeVelocity<<1))
+            :   (POS_X + ((int)NudgeVelocity>>1) >= ((int)nScreenWidth>>1) + ((int)NudgeVelocity<<1)) - IMGW && CURRENT_DEGREE%4==2 ? (((int)nScreenWidth>>1) + ((int)NudgeVelocity<<1)) - IMGW
+            :   (POS_X + ((int)NudgeVelocity>>1) >= ((int)nScreenWidth>>1) + ((int)NudgeVelocity<<1)) - IMGW && CURRENT_DEGREE%4==3 ? (((int)nScreenWidth>>1) + ((int)NudgeVelocity<<1)) - IMGW
+            :   POS_X + ((int)NudgeVelocity>>1);
             break;
             case '~':
                 close();
@@ -216,10 +231,34 @@ int main(int s, char * z[]){
         }
         // A check for when the teris piece hits the bottom of the map
         // NOTE: Set boundary formula to the bottum of the tile map
-        POS_Y = (POS_Y + IMGH) + speed >= nScreenHeight && CURRENT_DEGREE%4==0? (nScreenHeight - IMGH) - (IMGH>>1): POS_Y + ((int)speed>>2);
-        POS_Y = (POS_Y + IMGH) + speed >= nScreenHeight && CURRENT_DEGREE%4==1? (nScreenHeight - IMGH) - (IMGH>>1): POS_Y + ((int)speed>>2);
-        POS_Y = (POS_Y + IMGH) + speed >= nScreenHeight && CURRENT_DEGREE%4==2? (nScreenHeight - IMGH) - (IMGH>>1): POS_Y + ((int)speed>>2);
-        POS_Y = (POS_Y + IMGH) + speed >= nScreenHeight && CURRENT_DEGREE%4==3? (nScreenHeight - IMGH) - (IMGH>>1): POS_Y + ((int)speed>>2);
+
+            POS_Y = 
+            (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==0 ? (nScreenHeight - IMGH      - ((int)NudgeVelocity>>1))
+        :   (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==1 ? (nScreenHeight - (IMGH<<1) - ((int)NudgeVelocity>>1))
+        :   (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==2 ? (nScreenHeight - (IMGH<<1) - ((int)NudgeVelocity>>1))
+        :   (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==3 ? (nScreenHeight - (IMGH<<1) - ((int)NudgeVelocity>>1))
+        :   (POS_Y + speed);
+
+            POS_Y_UP = 
+            (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==0 ? (nScreenHeight - (IMGH<<1) - ((int)NudgeVelocity>>1))
+        :   (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==1 ? (nScreenHeight - (IMGH<<1) - ((int)NudgeVelocity>>1))
+        :   (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==2 ? (nScreenHeight - IMGH      - ((int)NudgeVelocity>>1))
+        :   (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==3 ? (nScreenHeight - (IMGH<<1) - ((int)NudgeVelocity>>1))
+        :   POS_Y_UP;
+
+            POS_Y_LEFT = 
+            (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==0 ? (nScreenHeight - IMGH      - ((int)NudgeVelocity>>1))
+        :   (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==1 ? (nScreenHeight - IMGH      - ((int)NudgeVelocity>>1))
+        :   (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==2 ? (nScreenHeight - (IMGH<<1) - ((int)NudgeVelocity>>1))
+        :   (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==3 ? (nScreenHeight - (IMGH*3 ) - ((int)NudgeVelocity>>1))
+        :   POS_Y_LEFT;
+
+            POS_Y_RIGHT = 
+            (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==0 ? (nScreenHeight - IMGH      - ((int)NudgeVelocity>>1))
+        :   (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==1 ? (nScreenHeight - (IMGH*3 ) - ((int)NudgeVelocity>>1))
+        :   (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==2 ? (nScreenHeight - (IMGH<<1) - ((int)NudgeVelocity>>1))
+        :   (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==3 ? (nScreenHeight - IMGH      - ((int)NudgeVelocity>>1))
+        :   POS_Y_RIGHT;
 
         SDL_Delay((int)speed << 2);
 

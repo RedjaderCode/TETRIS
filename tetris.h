@@ -8,6 +8,10 @@
 #include <SDL_Image.h>
 
 #define PI 3.14159
+#define CAT_COL 4
+#define CAT_ROW 21
+#define NUM_OF_FRAMES ((CAT_ROW<<2) - 5)
+#define CAT_FRAMES 8
 
 class TEXTURE{
 
@@ -45,6 +49,9 @@ enum Tet_pieces{
     GAME_BORDER,
 
     NUM_OF_TETRIS_TEXTURES
+};
+enum animations{
+    ORANGE_CAT
 };
 
 #endif
