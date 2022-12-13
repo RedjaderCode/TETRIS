@@ -228,7 +228,7 @@ int main(int s, char * z[]){
             POS_X_LEFT  = POS_X; POS_Y_LEFT        = (POS_Y + IMGH) + (IMGH>>1);
             POS_X_RIGHT = POS_X; POS_Y_RIGHT       = (POS_Y - IMGH) + (IMGH>>1);
             
-            POS_Y       = (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==1 ? (nScreenHeight - (IMGH<<1) - ((int)NudgeVelocity>>1)) : (POS_Y + speed);
+            POS_Y       = (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==1 ? (nScreenHeight - (IMGH/*<<1*/) - ((int)NudgeVelocity>>1)) : (POS_Y + speed);
             POS_Y_UP    = (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==1 ? (nScreenHeight - (IMGH<<1) - ((int)NudgeVelocity>>1)) :        POS_Y_UP;
             POS_Y_LEFT  = (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==1 ? (nScreenHeight - IMGH      - ((int)NudgeVelocity>>1)) :      POS_Y_LEFT;
             POS_Y_RIGHT = (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==1 ? (nScreenHeight - (IMGH*3 ) - ((int)NudgeVelocity>>1)) :     POS_Y_RIGHT;
@@ -240,7 +240,7 @@ int main(int s, char * z[]){
             POS_X_LEFT  = (POS_X + IMGW); POS_Y_LEFT  = POS_Y + (IMGH>>1);
             POS_X_RIGHT = (POS_X - IMGW); POS_Y_RIGHT = POS_Y + (IMGH>>1);
 
-            POS_Y       = (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==2 ? (nScreenHeight - (IMGH<<1) - ((int)NudgeVelocity>>1)) : (POS_Y + speed);
+            POS_Y       = (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==2 ? (nScreenHeight - (IMGH/*<<1*/) - ((int)NudgeVelocity>>1)) : (POS_Y + speed);
             POS_Y_UP    = (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==2 ? (nScreenHeight - IMGH      - ((int)NudgeVelocity>>1)) :        POS_Y_UP;
             POS_Y_LEFT  = (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==2 ? (nScreenHeight - (IMGH<<1) - ((int)NudgeVelocity>>1)) :      POS_Y_LEFT;
             POS_Y_RIGHT = (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==2 ? (nScreenHeight - (IMGH<<1) - ((int)NudgeVelocity>>1)) :     POS_Y_RIGHT;
@@ -252,7 +252,7 @@ int main(int s, char * z[]){
             POS_X_LEFT  = POS_X; POS_Y_LEFT        = (POS_Y - IMGH) + (IMGH>>1);
             POS_X_RIGHT = POS_X; POS_Y_RIGHT       = (POS_Y + IMGH) + (IMGH>>1);
 
-            POS_Y       = (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==3 ? (nScreenHeight - (IMGH<<1) - ((int)NudgeVelocity>>1)) : (POS_Y + speed);
+            POS_Y       = (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==3 ? (nScreenHeight - (IMGH/*<<1*/) - ((int)NudgeVelocity>>1)) : (POS_Y + speed);
             POS_Y_UP    = (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==3 ? (nScreenHeight - (IMGH<<1) - ((int)NudgeVelocity>>1)) :        POS_Y_UP;
             POS_Y_LEFT  = (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==3 ? (nScreenHeight - (IMGH*3 ) - ((int)NudgeVelocity>>1)) :      POS_Y_LEFT;
             POS_Y_RIGHT = (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==3 ? (nScreenHeight - IMGH      - ((int)NudgeVelocity>>1)) :     POS_Y_RIGHT;
