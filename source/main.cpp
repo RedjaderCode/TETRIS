@@ -262,6 +262,7 @@ int main(int s, char * z[]){
             break;
         }
 
+        //////////////////A check for the MAIN piece when the tetris piece hits the floor//////////////////////////
         if((POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight){
             POS_Y = 
                 CURRENT_DEGREE%4==MAIN        ? (nScreenHeight - IMGH -      ((int)NudgeVelocity>>1))
@@ -271,9 +272,7 @@ int main(int s, char * z[]){
             :   POS_Y;
         }
 
-        ///////////////////logic for when the tetris piece hits the ground////////////////////////
-
-        SDL_Delay((int)speed << 2);
+        SDL_Delay((int)speed << 1);
 
         ////////////////////////Resource rendering for background and map/////////////////////////
         _tetris_map[ BACKGROUND   ].render(NULL,  NULL,  &TetrisPieceMap[ BACKGROUND   ]);
