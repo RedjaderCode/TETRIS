@@ -53,5 +53,11 @@ enum Tet_pieces{
 enum animations{
     ORANGE_CAT
 };
+enum rotations{
+    MAIN,
+    SIDE_LEFT,
+    UPSIDE_DOWN,
+    SIDE_RIGHT
+};
 
 #endif

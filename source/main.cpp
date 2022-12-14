@@ -26,21 +26,19 @@ inline void init(){
 
     const char * WindowIcon = "assets/Title.png";
 
-    SDL_Init(SDL_INIT_EVERYTHING);
-    IMG_Init(IMG_INIT_PNG);
-
-    cWindow = SDL_CreateWindow  (title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, nScreenWidth, nScreenHeight, SDL_WINDOW_SHOWN);
-    cRender = SDL_CreateRenderer(cWindow, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-
-    SDL_Surface * cSurface = IMG_Load(WindowIcon);
-  	SDL_SetWindowIcon(cWindow, cSurface);
-  	SDL_FreeSurface(cSurface);
+    SDL_Init                                   (SDL_INIT_EVERYTHING);
+    IMG_Init                                   (IMG_INIT_PNG);
+    cWindow                = SDL_CreateWindow  (title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, nScreenWidth, nScreenHeight, SDL_WINDOW_SHOWN);
+    cRender                = SDL_CreateRenderer(cWindow, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    SDL_Surface * cSurface = IMG_Load          (WindowIcon);
+  	SDL_SetWindowIcon                          (cWindow, cSurface);
+  	SDL_FreeSurface                            (cSurface);
 }
 
 void TEXTURE::free(){
     SDL_DestroyTexture(cTexture);
-    IMGW = 0;
-    IMGH = 0;
+    IMGW       = 0;
+    IMGH       = 0;
     IMG_Width  = 0;
     IMG_Height = 0;
 }
@@ -110,10 +108,10 @@ inline void close(){
 
 int main(int s, char * z[]){
 
-    const uint8_t * input = SDL_GetKeyboardState(NULL);
-    bool running          = true;
-    unsigned char key     = ' ';
-    uint16_t CURRENT_DEGREE    = 0;
+    const uint8_t * input   = SDL_GetKeyboardState(NULL);
+    bool running            = true;
+    unsigned char key       = ' ';
+    uint16_t CURRENT_DEGREE = 0;
 
     init();
     LoadDims();
@@ -143,9 +141,12 @@ int main(int s, char * z[]){
     uint16_t POS_Y_RIGHT             = POS_Y;
     float NudgeVelocity              = BORDER_IMGW / 12; // 12 is the number of tiles in the map
     float speed                      = (IMGH - (IMGH * 0.5));
+
+    // resetting initial values to more sutable starting positions and real edges
                  POS_X               = MAP_X + (((int)NudgeVelocity<<1) + (int)NudgeVelocity);
                  POS_Y               = NudgeVelocity; // One tile down
-
+                 BORDER_IMGW         = BORDER_IMGW>>1;
+                 BORDER_IMGH         = BORDER_IMGH>>1;
 
 
     printf("Window position -> [%d][%d]", MAP_X, MAP_Y);
@@ -188,19 +189,19 @@ int main(int s, char * z[]){
             case 'L':
             printf("rotation[%d]\nPOS_X[%d]\nPOS_Y[%d]\n\n\n", CURRENT_DEGREE, POS_X, POS_Y);
                 POS_X = 
-                (POS_X - ((int)NudgeVelocity>>1) <= (MAP_X + NudgeVelocity)) && CURRENT_DEGREE%4==0 ? (MAP_X + NudgeVelocity          )
-            :   (POS_X - ((int)NudgeVelocity>>1) <= (MAP_X + NudgeVelocity)) && CURRENT_DEGREE%4==1 ? (MAP_X + NudgeVelocity          )
-            :   (POS_X - ((int)NudgeVelocity>>1) <= (MAP_X + NudgeVelocity)) && CURRENT_DEGREE%4==2 ? (MAP_X + NudgeVelocity          )
-            :   (POS_X - ((int)NudgeVelocity>>1) <= (MAP_X + NudgeVelocity)) && CURRENT_DEGREE%4==3 ? (MAP_X + ((int)NudgeVelocity>>1))
+                (POS_X - ((int)NudgeVelocity>>1) <= (MAP_X + NudgeVelocity)) && CURRENT_DEGREE%4==MAIN        ? (MAP_X + NudgeVelocity          )
+            :   (POS_X - ((int)NudgeVelocity>>1) <= (MAP_X + NudgeVelocity)) && CURRENT_DEGREE%4==SIDE_LEFT   ? (MAP_X + NudgeVelocity          )
+            :   (POS_X - ((int)NudgeVelocity>>1) <= (MAP_X + NudgeVelocity)) && CURRENT_DEGREE%4==UPSIDE_DOWN ? (MAP_X + NudgeVelocity          )
+            :   (POS_X - ((int)NudgeVelocity>>1) <= (MAP_X + NudgeVelocity)) && CURRENT_DEGREE%4==SIDE_RIGHT  ? (MAP_X + ((int)NudgeVelocity>>1))
             :   POS_X - ((int)NudgeVelocity>>1);
             break;
             case 'R':
             printf("rotation[%d]\nPOS_X[%d]\nPOS_Y[%d]\n\n\n", CURRENT_DEGREE, POS_X, POS_Y);
                 POS_X = 
-                (POS_X + ((int)NudgeVelocity>>1) >= ((int)nScreenWidth>>1) + ((int)NudgeVelocity<<1)) - IMGW && CURRENT_DEGREE%4==0 ? (((int)nScreenWidth>>1) + ((int)NudgeVelocity<<1)) - IMGW
-            :   (POS_X + ((int)NudgeVelocity>>1) >= ((int)nScreenWidth>>1) + ((int)NudgeVelocity<<1))        && CURRENT_DEGREE%4==1 ? (((int)nScreenWidth>>1) + ((int)NudgeVelocity<<1))
-            :   (POS_X + ((int)NudgeVelocity>>1) >= ((int)nScreenWidth>>1) + ((int)NudgeVelocity<<1)) - IMGW && CURRENT_DEGREE%4==2 ? (((int)nScreenWidth>>1) + ((int)NudgeVelocity<<1)) - IMGW
-            :   (POS_X + ((int)NudgeVelocity>>1) >= ((int)nScreenWidth>>1) + ((int)NudgeVelocity<<1)) - IMGW && CURRENT_DEGREE%4==3 ? (((int)nScreenWidth>>1) + ((int)NudgeVelocity<<1)) - IMGW
+                POS_X + ((int)NudgeVelocity>>1) >= MAP_X + (BORDER_IMGW - ((int)NudgeVelocity<<1)) && CURRENT_DEGREE%4==MAIN        ? (((int)nScreenWidth>>1) + ((int)NudgeVelocity<<1)) - IMGW
+            :   POS_X + ((int)NudgeVelocity>>1) >= MAP_X + (BORDER_IMGW - ((int)NudgeVelocity<<1)) && CURRENT_DEGREE%4==SIDE_LEFT   ? (((int)nScreenWidth>>1) + ((int)NudgeVelocity<<1))
+            :   POS_X + ((int)NudgeVelocity>>1) >= MAP_X + (BORDER_IMGW - ((int)NudgeVelocity<<1)) && CURRENT_DEGREE%4==UPSIDE_DOWN ? (((int)nScreenWidth>>1) + ((int)NudgeVelocity<<1)) - IMGW
+            :   POS_X + ((int)NudgeVelocity>>1) >= MAP_X + (BORDER_IMGW - ((int)NudgeVelocity<<1)) && CURRENT_DEGREE%4==SIDE_RIGHT  ? (((int)nScreenWidth>>1) + ((int)NudgeVelocity<<1)) - IMGW
             :   POS_X + ((int)NudgeVelocity>>1);
             break;
             case '~':
@@ -208,97 +209,77 @@ int main(int s, char * z[]){
                 running = false;
             break;
         }
-        // a check for each iteration and their computation
+
+        /////////////////////////DEFINITIONS FOR THE BOUNDARIES AND LOGIC OF THE MOVING TETIS PIECES///////////////////////////////
         switch(CURRENT_DEGREE%4){
-            case 0:
+            case MAIN:
 
             POS_X_UP    = POS_X; POS_Y_UP             = (POS_Y - IMGH) + (IMGH>>1);
             POS_X_LEFT  = (POS_X - IMGW); POS_Y_LEFT  = POS_Y + (IMGH>>1);
             POS_X_RIGHT = (POS_X + IMGW); POS_Y_RIGHT = POS_Y + (IMGH>>1);
 
-            POS_Y       = (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==0 ? (nScreenHeight - IMGH      - ((int)NudgeVelocity>>1)) : (POS_Y + speed);
-            POS_Y_UP    = (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==0 ? (nScreenHeight - (IMGH<<1) - ((int)NudgeVelocity>>1)) :        POS_Y_UP;
-            POS_Y_LEFT  = (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==0 ? (nScreenHeight - IMGH      - ((int)NudgeVelocity>>1)) :      POS_Y_LEFT;
-            POS_Y_RIGHT = (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==0 ? (nScreenHeight - IMGH      - ((int)NudgeVelocity>>1)) :     POS_Y_RIGHT;
+            POS_Y       = (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==MAIN ? (nScreenHeight - IMGH      - ((int)NudgeVelocity>>1)) : (POS_Y + speed);
+            POS_Y_UP    = (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==MAIN ? (nScreenHeight - (IMGH<<1) - ((int)NudgeVelocity>>1)) :        POS_Y_UP;
+            POS_Y_LEFT  = (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==MAIN ? (nScreenHeight - IMGH      - ((int)NudgeVelocity>>1)) :      POS_Y_LEFT;
+            POS_Y_RIGHT = (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==MAIN ? (nScreenHeight - IMGH      - ((int)NudgeVelocity>>1)) :     POS_Y_RIGHT;
                 
             break;
-            case 1:
+            case SIDE_LEFT:
 
             POS_X_UP    = (POS_X - IMGW); POS_Y_UP = POS_Y + (IMGH>>1);
             POS_X_LEFT  = POS_X; POS_Y_LEFT        = (POS_Y + IMGH) + (IMGH>>1);
             POS_X_RIGHT = POS_X; POS_Y_RIGHT       = (POS_Y - IMGH) + (IMGH>>1);
             
-            POS_Y       = (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==1 ? (nScreenHeight - (IMGH/*<<1*/) - ((int)NudgeVelocity>>1)) : (POS_Y + speed);
-            POS_Y_UP    = (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==1 ? (nScreenHeight - (IMGH<<1) - ((int)NudgeVelocity>>1)) :        POS_Y_UP;
-            POS_Y_LEFT  = (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==1 ? (nScreenHeight - IMGH      - ((int)NudgeVelocity>>1)) :      POS_Y_LEFT;
-            POS_Y_RIGHT = (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==1 ? (nScreenHeight - (IMGH*3 ) - ((int)NudgeVelocity>>1)) :     POS_Y_RIGHT;
+            POS_Y       = (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==SIDE_LEFT ? (nScreenHeight - (IMGH   ) - ((int)NudgeVelocity>>1)) : (POS_Y + speed);
+            POS_Y_UP    = (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==SIDE_LEFT ? (nScreenHeight - (IMGH<<1) - ((int)NudgeVelocity>>1)) :        POS_Y_UP;
+            POS_Y_LEFT  = (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==SIDE_LEFT ? (nScreenHeight - IMGH      - ((int)NudgeVelocity>>1)) :      POS_Y_LEFT;
+            POS_Y_RIGHT = (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==SIDE_LEFT ? (nScreenHeight - (IMGH*3 ) - ((int)NudgeVelocity>>1)) :     POS_Y_RIGHT;
             
             break;
-            case 2:
+            case UPSIDE_DOWN:
 
             POS_X_UP    = POS_X; POS_Y_UP             = (POS_Y + IMGH) + (IMGH>>1);
             POS_X_LEFT  = (POS_X + IMGW); POS_Y_LEFT  = POS_Y + (IMGH>>1);
             POS_X_RIGHT = (POS_X - IMGW); POS_Y_RIGHT = POS_Y + (IMGH>>1);
 
-            POS_Y       = (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==2 ? (nScreenHeight - (IMGH/*<<1*/) - ((int)NudgeVelocity>>1)) : (POS_Y + speed);
-            POS_Y_UP    = (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==2 ? (nScreenHeight - IMGH      - ((int)NudgeVelocity>>1)) :        POS_Y_UP;
-            POS_Y_LEFT  = (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==2 ? (nScreenHeight - (IMGH<<1) - ((int)NudgeVelocity>>1)) :      POS_Y_LEFT;
-            POS_Y_RIGHT = (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==2 ? (nScreenHeight - (IMGH<<1) - ((int)NudgeVelocity>>1)) :     POS_Y_RIGHT;
+            POS_Y       = (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==UPSIDE_DOWN ? (nScreenHeight - (IMGH   ) - ((int)NudgeVelocity>>1)) : (POS_Y + speed);
+            POS_Y_UP    = (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==UPSIDE_DOWN ? (nScreenHeight - IMGH      - ((int)NudgeVelocity>>1)) :        POS_Y_UP;
+            POS_Y_LEFT  = (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==UPSIDE_DOWN ? (nScreenHeight - (IMGH<<1) - ((int)NudgeVelocity>>1)) :      POS_Y_LEFT;
+            POS_Y_RIGHT = (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==UPSIDE_DOWN ? (nScreenHeight - (IMGH<<1) - ((int)NudgeVelocity>>1)) :     POS_Y_RIGHT;
             
             break;
-            case 3:
+            case SIDE_RIGHT:
 
             POS_X_UP    = (POS_X + IMGW); POS_Y_UP = POS_Y + (IMGH>>1);
             POS_X_LEFT  = POS_X; POS_Y_LEFT        = (POS_Y - IMGH) + (IMGH>>1);
             POS_X_RIGHT = POS_X; POS_Y_RIGHT       = (POS_Y + IMGH) + (IMGH>>1);
 
-            POS_Y       = (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==3 ? (nScreenHeight - (IMGH/*<<1*/) - ((int)NudgeVelocity>>1)) : (POS_Y + speed);
-            POS_Y_UP    = (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==3 ? (nScreenHeight - (IMGH<<1) - ((int)NudgeVelocity>>1)) :        POS_Y_UP;
-            POS_Y_LEFT  = (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==3 ? (nScreenHeight - (IMGH*3 ) - ((int)NudgeVelocity>>1)) :      POS_Y_LEFT;
-            POS_Y_RIGHT = (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==3 ? (nScreenHeight - IMGH      - ((int)NudgeVelocity>>1)) :     POS_Y_RIGHT;
+            POS_Y       = (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==SIDE_RIGHT ? (nScreenHeight - (IMGH   ) - ((int)NudgeVelocity>>1)) : (POS_Y + speed);
+            POS_Y_UP    = (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==SIDE_RIGHT ? (nScreenHeight - (IMGH<<1) - ((int)NudgeVelocity>>1)) :        POS_Y_UP;
+            POS_Y_LEFT  = (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==SIDE_RIGHT ? (nScreenHeight - (IMGH*3 ) - ((int)NudgeVelocity>>1)) :      POS_Y_LEFT;
+            POS_Y_RIGHT = (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==SIDE_RIGHT ? (nScreenHeight - IMGH      - ((int)NudgeVelocity>>1)) :     POS_Y_RIGHT;
             
             break;
         }
 
-        // ((int)NudgeVelocity>>1) -> This represents a single tile unit of the tetris map
-
-        /////////////////////////DEFINITIONS FOR THE BOUNDARIES AND LOGIC OF THE MOVING TETIS PIECES///////////////////////////////
-/*
+        if((POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight){
             POS_Y = 
-            (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==0 ? (nScreenHeight - IMGH      - ((int)NudgeVelocity>>1))
-        :   (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==1 ? (nScreenHeight - (IMGH<<1) - ((int)NudgeVelocity>>1))
-        :   (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==2 ? (nScreenHeight - (IMGH<<1) - ((int)NudgeVelocity>>1))
-        :   (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==3 ? (nScreenHeight - (IMGH<<1) - ((int)NudgeVelocity>>1))
-        :   (POS_Y + speed);
+                CURRENT_DEGREE%4==MAIN        ? (nScreenHeight - IMGH -      ((int)NudgeVelocity>>1))
+            :   CURRENT_DEGREE%4==SIDE_LEFT   ? (nScreenHeight - (IMGH<<1) - ((int)NudgeVelocity>>1))
+            :   CURRENT_DEGREE%4==UPSIDE_DOWN ? (nScreenHeight - (IMGH<<1) - ((int)NudgeVelocity>>1))
+            :   CURRENT_DEGREE%4==SIDE_RIGHT  ? (nScreenHeight - (IMGH<<1) - ((int)NudgeVelocity>>1))
+            :   POS_Y;
+        }
 
-            POS_Y_UP = 
-            (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==0 ? (nScreenHeight - (IMGH<<1) - ((int)NudgeVelocity>>1))
-        :   (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==1 ? (nScreenHeight - (IMGH<<1) - ((int)NudgeVelocity>>1))
-        :   (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==2 ? (nScreenHeight - IMGH      - ((int)NudgeVelocity>>1))
-        :   (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==3 ? (nScreenHeight - (IMGH<<1) - ((int)NudgeVelocity>>1))
-        :   POS_Y_UP;
+        ///////////////////logic for when the tetris piece hits the ground////////////////////////
 
-            POS_Y_LEFT = 
-            (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==0 ? (nScreenHeight - IMGH      - ((int)NudgeVelocity>>1))
-        :   (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==1 ? (nScreenHeight - IMGH      - ((int)NudgeVelocity>>1))
-        :   (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==2 ? (nScreenHeight - (IMGH<<1) - ((int)NudgeVelocity>>1))
-        :   (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==3 ? (nScreenHeight - (IMGH*3 ) - ((int)NudgeVelocity>>1))
-        :   POS_Y_LEFT;
-
-            POS_Y_RIGHT = 
-            (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==0 ? (nScreenHeight - IMGH      - ((int)NudgeVelocity>>1))
-        :   (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==1 ? (nScreenHeight - (IMGH*3 ) - ((int)NudgeVelocity>>1))
-        :   (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==2 ? (nScreenHeight - (IMGH<<1) - ((int)NudgeVelocity>>1))
-        :   (POS_Y + (IMGH + ((int)NudgeVelocity>>1))) + speed >= nScreenHeight && CURRENT_DEGREE%4==3 ? (nScreenHeight - IMGH      - ((int)NudgeVelocity>>1))
-        :   POS_Y_RIGHT;
-*/
         SDL_Delay((int)speed << 2);
 
-        //Resource rendering for background and map
+        ////////////////////////Resource rendering for background and map/////////////////////////
         _tetris_map[ BACKGROUND   ].render(NULL,  NULL,  &TetrisPieceMap[ BACKGROUND   ]);
         _tetris_map[ MAP_N_BORDER ].render(MAP_X, MAP_Y, &TetrisPieceMap[ MAP_N_BORDER ]);
     
-        //Tetris Pieces initial
+        ////////////////////////////Tetris Pieces initial///////////////////////////
         _tetris_T[ TETRIS_T_PIECE ].render(POS_X,       POS_Y,       &TetrisPieceT[ TETRIS_T_PIECE ][ T_CENTRAL ]);
         _tetris_T[ TETRIS_T_PIECE ].render(POS_X_UP,    POS_Y_UP,    &TetrisPieceT[ TETRIS_T_PIECE ][ T_UP      ]);
         _tetris_T[ TETRIS_T_PIECE ].render(POS_X_LEFT,  POS_Y_LEFT,  &TetrisPieceT[ TETRIS_T_PIECE ][ T_LEFT    ]);
